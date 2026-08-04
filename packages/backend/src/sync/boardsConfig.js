@@ -44,8 +44,7 @@ export const boardsConfig = [
       },
       {
         idSuffix: 'principal',
-        nameColumn: 'text_mm57z7zg', // שם מנהל/ת
-        nameOrder: 'lastFirst', // TODO: לאשר מול הארגון - נראה שהסדר הוא "משפחה פרטי"
+        nameColumn: 'text_mm57z7zg', // שם מנהל/ת - בסדר "פרטי משפחה" (יסודרו כך ב-Monday)
         role: 'מנהל/ת בית ספר',
         phone: 'text_mm57v1w0', // נייד מנהל/ת
         email: null,
