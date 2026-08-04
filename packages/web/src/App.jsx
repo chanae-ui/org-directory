@@ -150,14 +150,16 @@ export default function App() {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="חיפוש (לחיצה על / קופצת לכאן)"
+              placeholder="חיפוש"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {search && (
+            {search ? (
               <button className="search-clear" onClick={() => setSearch('')} aria-label="נקה חיפוש">
                 <IconX />
               </button>
+            ) : (
+              <kbd className="shortcut-hint">/</kbd>
             )}
           </div>
 
