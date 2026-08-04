@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import dotenv from 'dotenv';
 import { pool } from '../db/pool.js';
 import { boardsConfig } from './boardsConfig.js';
@@ -42,15 +43,26 @@ async function fetchBoardItems(boardId, apiToken) {
   return json.data.boards[0].items_page.items;
 }
 
+const NAME_PREFIXES = ['גב\'', 'גברת', 'מר', 'ד"ר', 'דר\'', 'הרב', 'הרבנית'];
+
+function splitName(fullName) {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length > 1 && NAME_PREFIXES.includes(parts[0])) {
+    parts.shift();
+  }
+  const [firstName, ...rest] = parts;
+  return { firstName: firstName || fullName, lastName: rest.join(' ') };
+}
+
 function mapItemToContact(item, board) {
   const colById = Object.fromEntries(item.column_values.map((c) => [c.id, c.text]));
-  const [firstName, ...rest] = item.name.split(' ');
+  const { firstName, lastName } = splitName(item.name);
   const { columnMap } = board;
 
   return {
     monday_item_id: item.id,
-    first_name: firstName || item.name,
-    last_name: rest.join(' ') || '',
+    first_name: firstName,
+    last_name: lastName,
     role: (columnMap.role && colById[columnMap.role]) || board.defaultRole || null,
     school_name: (columnMap.school_name && colById[columnMap.school_name]) || null,
     institution_code: (columnMap.institution_code && colById[columnMap.institution_code]) || null,
@@ -119,7 +131,7 @@ export async function runSync() {
 }
 
 // מאפשר להריץ סנכרון ידני: npm run sync
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   runSync()
     .then(() => process.exit(0))
     .catch((err) => {

@@ -9,16 +9,16 @@
  */
 export const boardsConfig = [
   {
-    boardId: '', // TODO: למלא Board ID אמיתי
-    boardName: 'לדוגמה - מורים', // לתיעוד בלבד, לא נשמר במסד הנתונים
-    defaultRole: null, // אם אין עמודת תפקיד בבורד הזה, אפשר לקבע כאן ערך קבוע (למשל 'מורה')
+    boardId: '5099869449',
+    boardName: 'מפקחים',
+    defaultRole: 'מפקח/ת',
     columnMap: {
       role: null,
       school_name: null,
       institution_code: null,
-      city: null,
-      phone: null,
-      email: null,
+      city: 'text_mm52533c', // ישוב
+      phone: 'text_mm52a8n1', // נייד
+      email: 'text_mm52zgrt', // מייל
     },
   },
 ];
