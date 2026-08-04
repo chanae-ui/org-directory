@@ -45,31 +45,44 @@ async function fetchBoardItems(boardId, apiToken) {
 
 const NAME_PREFIXES = ['גב\'', 'גברת', 'מר', 'ד"ר', 'דר\'', 'הרב', 'הרבנית'];
 
-function splitName(fullName) {
+function splitName(fullName, nameOrder = 'firstLast') {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length > 1 && NAME_PREFIXES.includes(parts[0])) {
     parts.shift();
+  }
+  if (nameOrder === 'lastFirst') {
+    const [lastName, ...rest] = parts;
+    return { firstName: rest.join(' ') || fullName, lastName: lastName || '' };
   }
   const [firstName, ...rest] = parts;
   return { firstName: firstName || fullName, lastName: rest.join(' ') };
 }
 
-function mapItemToContact(item, board) {
+// כל בורד מגדיר board.contacts - מערך של "תבניות" איש קשר, כי שורה אחת ב-Monday
+// יכולה להכיל כמה אנשי קשר נפרדים (למשל: גם המוסד עצמו וגם המנהל/ת שלו).
+function mapItemToContacts(item, board) {
   const colById = Object.fromEntries(item.column_values.map((c) => [c.id, c.text]));
-  const { firstName, lastName } = splitName(item.name);
-  const { columnMap } = board;
+  const shared = board.columnMap || {};
+  const schoolName = (shared.school_name && colById[shared.school_name]) || item.name;
+  const institutionCode = (shared.institution_code && colById[shared.institution_code]) || null;
+  const city = (shared.city && colById[shared.city]) || null;
 
-  return {
-    monday_item_id: item.id,
-    first_name: firstName,
-    last_name: lastName,
-    role: (columnMap.role && colById[columnMap.role]) || board.defaultRole || null,
-    school_name: (columnMap.school_name && colById[columnMap.school_name]) || null,
-    institution_code: (columnMap.institution_code && colById[columnMap.institution_code]) || null,
-    city: (columnMap.city && colById[columnMap.city]) || null,
-    phone: (columnMap.phone && colById[columnMap.phone]) || null,
-    email: (columnMap.email && colById[columnMap.email]) || null,
-  };
+  return board.contacts.map((c) => {
+    const rawName = c.nameColumn ? colById[c.nameColumn] : item.name;
+    const { firstName, lastName } = splitName(rawName || item.name, c.nameOrder);
+
+    return {
+      monday_item_id: `${item.id}:${c.idSuffix}`,
+      first_name: firstName,
+      last_name: lastName,
+      role: c.role || board.defaultRole || null,
+      school_name: schoolName,
+      institution_code: institutionCode,
+      city,
+      phone: (c.phone && colById[c.phone]) || null,
+      email: (c.email && colById[c.email]) || null,
+    };
+  });
 }
 
 async function upsertContact(contact) {
@@ -122,8 +135,9 @@ export async function runSync() {
     console.log(`  נמצאו ${items.length} פריטים`);
 
     for (const item of items) {
-      const contact = mapItemToContact(item, board);
-      await upsertContact(contact);
+      for (const contact of mapItemToContacts(item, board)) {
+        await upsertContact(contact);
+      }
     }
   }
 

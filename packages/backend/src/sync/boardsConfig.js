@@ -13,12 +13,43 @@ export const boardsConfig = [
     boardName: 'מפקחים',
     defaultRole: 'מפקח/ת',
     columnMap: {
-      role: null,
-      school_name: null,
-      institution_code: null,
+      // שדות "מוסדיים" משותפים - אין כאלה בבורד הזה
       city: 'text_mm52533c', // ישוב
-      phone: 'text_mm52a8n1', // נייד
-      email: 'text_mm52zgrt', // מייל
     },
+    contacts: [
+      {
+        idSuffix: 'main',
+        nameColumn: null, // השם של הפריט עצמו הוא שם המפקח/ת
+        phone: 'text_mm52a8n1', // נייד
+        email: 'text_mm52zgrt', // מייל
+      },
+    ],
+  },
+  {
+    boardId: '5100219078',
+    boardName: 'בתי ספר',
+    columnMap: {
+      // שדות "מוסדיים" משותפים לשני אנשי הקשר שנגזרים מכל שורה
+      school_name: null, // אין עמודה נפרדת - שם הפריט עצמו הוא שם המוסד
+      institution_code: 'text_mm5736hf', // סמל מוסד
+      city: 'text_mm571fj5', // ישוב
+    },
+    contacts: [
+      {
+        idSuffix: 'institution',
+        nameColumn: null, // שם המוסד עצמו (שם הפריט) משמש כ"שם" איש הקשר
+        role: 'מוסד',
+        phone: 'text_mm57gryq', // טלפון מוסד
+        email: 'text_mm57t082', // מייל בית הספר
+      },
+      {
+        idSuffix: 'principal',
+        nameColumn: 'text_mm57z7zg', // שם מנהל/ת
+        nameOrder: 'lastFirst', // TODO: לאשר מול הארגון - נראה שהסדר הוא "משפחה פרטי"
+        role: 'מנהל/ת בית ספר',
+        phone: 'text_mm57v1w0', // נייד מנהל/ת
+        email: null,
+      },
+    ],
   },
 ];
