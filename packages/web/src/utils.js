@@ -30,3 +30,37 @@ export function groupByFirstLetter(contacts) {
   }
   return groups;
 }
+
+const NO_SCHOOL = 'ללא שיוך מוסדי';
+
+export function groupBySchool(contacts) {
+  const sorted = [...contacts].sort((a, b) =>
+    (a.school_name || NO_SCHOOL).localeCompare(b.school_name || NO_SCHOOL, 'he')
+  );
+  const groups = new Map();
+  for (const contact of sorted) {
+    const key = contact.school_name || NO_SCHOOL;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(contact);
+  }
+  // בתוך כל מוסד - שורת "המוסד" עצמה קודם, ואז שאר אנשי הקשר
+  for (const list of groups.values()) {
+    list.sort((a, b) => (a.role === 'מוסד' ? -1 : 0) - (b.role === 'מוסד' ? -1 : 0));
+  }
+  return groups;
+}
+
+const FAVORITES_KEY = 'org-directory:favorites';
+
+export function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveFavorites(set) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...set]));
+}

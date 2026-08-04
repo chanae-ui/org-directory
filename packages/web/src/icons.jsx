@@ -93,6 +93,27 @@ export function IconChevronRight(props) {
   );
 }
 
+export function IconStar({ filled, ...props }) {
+  return (
+    <svg
+      {...base}
+      {...props}
+      fill={filled ? 'currentColor' : 'none'}
+    >
+      <path d="M12 3.5l2.6 5.5 6 0.8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6-4.4-4.2 6-0.8z" />
+    </svg>
+  );
+}
+
+export function IconUser(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20c1-3.8 4.2-6 7.5-6s6.5 2.2 7.5 6" />
+    </svg>
+  );
+}
+
 export function IconX(props) {
   return (
     <svg {...base} {...props}>

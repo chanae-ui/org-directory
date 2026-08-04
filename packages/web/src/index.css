@@ -78,6 +78,43 @@ svg {
   color: var(--text);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-toggle {
+  display: flex;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.view-toggle button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.view-toggle button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.view-toggle button.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(20, 21, 26, 0.12);
+}
+
 .sync-button {
   background: var(--accent-tint);
   color: var(--accent);
@@ -328,6 +365,37 @@ svg {
   color: #c6c8d2;
   width: 15px;
   height: 15px;
+}
+
+.favorite-button {
+  flex: none;
+  border: none;
+  background: none;
+  color: #d1d3db;
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+}
+
+.favorite-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.favorite-button.active {
+  color: #f59e0b;
+}
+
+.favorites-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.favorites-star {
+  width: 13px;
+  height: 13px;
+  color: #f59e0b;
 }
 
 .alpha-index {

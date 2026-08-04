@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchContacts, triggerSync } from './api.js';
 import ContactDetail from './ContactCard.jsx';
-import { getInitials, getAvatarColor, groupByFirstLetter } from './utils.js';
-import { IconSearch, IconChevronLeft, IconRefresh, IconX } from './icons.jsx';
+import {
+  getInitials,
+  getAvatarColor,
+  groupByFirstLetter,
+  groupBySchool,
+  loadFavorites,
+  saveFavorites,
+} from './utils.js';
+import { IconSearch, IconChevronLeft, IconRefresh, IconX, IconStar, IconUser, IconBuilding } from './icons.jsx';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -14,6 +21,8 @@ export default function App() {
   const [role, setRole] = useState('');
   const [selectedContact, setSelectedContact] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [favorites, setFavorites] = useState(() => loadFavorites());
+  const [viewMode, setViewMode] = useState('person'); // 'person' | 'institution'
   const sectionRefs = useRef(new Map());
   const scrollRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -65,8 +74,29 @@ export default function App() {
   );
 
   const isFiltering = Boolean(search || city || schoolName || role);
-  const groups = useMemo(() => groupByFirstLetter(contacts), [contacts]);
-  const letters = useMemo(() => [...groups.keys()], [groups]);
+  const showFavoritesSection = viewMode === 'person' && !isFiltering && favorites.size > 0;
+  const favoriteContacts = useMemo(
+    () => contacts.filter((c) => favorites.has(c.id)),
+    [contacts, favorites]
+  );
+  // כשמציגים סקציית "מועדפים" למעלה, לא מציגים את אותם אנשי קשר שוב במקום הרגיל שלהם ברשימה
+  const groupableContacts = showFavoritesSection
+    ? contacts.filter((c) => !favorites.has(c.id))
+    : contacts;
+  const groups = useMemo(
+    () => (viewMode === 'institution' ? groupBySchool(groupableContacts) : groupByFirstLetter(groupableContacts)),
+    [groupableContacts, viewMode]
+  );
+  const groupKeys = useMemo(() => [...groups.keys()], [groups]);
+
+  function toggleFavorite(id) {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      saveFavorites(next);
+      return next;
+    });
+  }
 
   function clearAllFilters() {
     setSearch('');
@@ -88,8 +118,8 @@ export default function App() {
     }
   }
 
-  function scrollToLetter(letter) {
-    const node = sectionRefs.current.get(letter);
+  function scrollToGroup(key) {
+    const node = sectionRefs.current.get(key);
     if (node && scrollRef.current) {
       scrollRef.current.scrollTo({ top: node.offsetTop - 8, behavior: 'smooth' });
     }
@@ -98,6 +128,7 @@ export default function App() {
   function renderRow(contact) {
     const fullName = `${contact.first_name} ${contact.last_name}`.trim();
     const avatar = getAvatarColor(fullName);
+    const isFavorite = favorites.has(contact.id);
     return (
       <li
         key={contact.id}
@@ -111,6 +142,16 @@ export default function App() {
           <span className="contact-name">{fullName}</span>
           <span className="contact-meta">{contact.role || '—'}{contact.school_name ? ` · ${contact.school_name}` : ''}</span>
         </span>
+        <button
+          className={`favorite-button ${isFavorite ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(contact.id);
+          }}
+          aria-label={isFavorite ? 'הסרה מהמועדפים' : 'הוספה למועדפים'}
+        >
+          <IconStar filled={isFavorite} />
+        </button>
         <IconChevronLeft className="chevron" />
       </li>
     );
@@ -140,9 +181,27 @@ export default function App() {
         <div className="app-screen" ref={scrollRef}>
           <header className="header">
             <h1>אנשי קשר</h1>
-            <button className="sync-button" onClick={handleSync} disabled={syncing} aria-label="רענון">
-              <IconRefresh className={syncing ? 'spin' : ''} />
-            </button>
+            <div className="header-actions">
+              <div className="view-toggle">
+                <button
+                  className={viewMode === 'person' ? 'active' : ''}
+                  onClick={() => setViewMode('person')}
+                  aria-label="לפי אנשים"
+                >
+                  <IconUser />
+                </button>
+                <button
+                  className={viewMode === 'institution' ? 'active' : ''}
+                  onClick={() => setViewMode('institution')}
+                  aria-label="לפי מוסד"
+                >
+                  <IconBuilding />
+                </button>
+              </div>
+              <button className="sync-button" onClick={handleSync} disabled={syncing} aria-label="רענון">
+                <IconRefresh className={syncing ? 'spin' : ''} />
+              </button>
+            </div>
           </header>
 
           <div className="search-bar">
@@ -181,14 +240,25 @@ export default function App() {
           {loading && <p className="status">טוען...</p>}
           {!loading && contacts.length === 0 && <p className="status">לא נמצאו אנשי קשר.</p>}
 
-          {isFiltering ? (
+          {showFavoritesSection && favoriteContacts.length > 0 && (
+            <div>
+              <div className="section-header favorites-header">
+                <IconStar filled className="favorites-star" /> מועדפים
+              </div>
+              <ul className="contact-list">
+                {favoriteContacts.map(renderRow)}
+              </ul>
+            </div>
+          )}
+
+          {viewMode === 'person' && isFiltering ? (
             <ul className="contact-list">
               {contacts.map(renderRow)}
             </ul>
           ) : (
-            [...groups.entries()].map(([letter, group]) => (
-              <div key={letter} ref={(el) => sectionRefs.current.set(letter, el)}>
-                <div className="section-header">{letter}</div>
+            [...groups.entries()].map(([key, group]) => (
+              <div key={key} ref={(el) => sectionRefs.current.set(key, el)}>
+                <div className="section-header">{key}</div>
                 <ul className="contact-list">
                   {group.map(renderRow)}
                 </ul>
@@ -197,10 +267,10 @@ export default function App() {
           )}
         </div>
 
-        {!isFiltering && letters.length > 1 && (
+        {viewMode === 'person' && !isFiltering && groupKeys.length > 1 && (
           <div className="alpha-index">
-            {letters.map((letter) => (
-              <button key={letter} onClick={() => scrollToLetter(letter)}>{letter}</button>
+            {groupKeys.map((key) => (
+              <button key={key} onClick={() => scrollToGroup(key)}>{key}</button>
             ))}
           </div>
         )}
