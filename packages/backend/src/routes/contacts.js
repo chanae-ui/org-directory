@@ -20,9 +20,9 @@ function buildSmartSearchConditions(search, values) {
   });
 }
 
-// GET /api/contacts?search=...&city=...&institutionCode=...&schoolName=...
+// GET /api/contacts?search=...&city=...&institutionCode=...&schoolName=...&role=...
 contactsRouter.get('/', async (req, res) => {
-  const { search, city, institutionCode, schoolName } = req.query;
+  const { search, city, institutionCode, schoolName, role } = req.query;
 
   const conditions = [];
   const values = [];
@@ -41,6 +41,10 @@ contactsRouter.get('/', async (req, res) => {
   if (schoolName) {
     values.push(schoolName);
     conditions.push(`school_name = $${values.length}`);
+  }
+  if (role) {
+    values.push(role);
+    conditions.push(`role = $${values.length}`);
   }
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';

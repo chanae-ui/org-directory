@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchContacts, triggerSync } from './api.js';
 import ContactDetail from './ContactCard.jsx';
 import { getInitials, getAvatarColor, groupByFirstLetter } from './utils.js';
-import { IconSearch, IconChevronLeft, IconRefresh } from './icons.jsx';
+import { IconSearch, IconChevronLeft, IconRefresh, IconX } from './icons.jsx';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -11,16 +11,18 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [schoolName, setSchoolName] = useState('');
+  const [role, setRole] = useState('');
   const [selectedContact, setSelectedContact] = useState(null);
   const [syncing, setSyncing] = useState(false);
   const sectionRefs = useRef(new Map());
   const scrollRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   async function loadContacts() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchContacts({ search, city, schoolName });
+      const data = await fetchContacts({ search, city, schoolName, role });
       data.sort((a, b) => (a.first_name || '').localeCompare(b.first_name || '', 'he'));
       setContacts(data);
     } catch (err) {
@@ -34,7 +36,20 @@ export default function App() {
     const timeout = setTimeout(loadContacts, 300);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, city, schoolName]);
+  }, [search, city, schoolName, role]);
+
+  // קיצור מקלדת: "/" קופץ ישר לשדה החיפוש (כמו ברוב האפליקציות)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key !== '/') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      e.preventDefault();
+      searchInputRef.current?.focus();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const cities = useMemo(
     () => [...new Set(contacts.map((c) => c.city).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he')),
@@ -44,10 +59,21 @@ export default function App() {
     () => [...new Set(contacts.map((c) => c.school_name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he')),
     [contacts]
   );
+  const roles = useMemo(
+    () => [...new Set(contacts.map((c) => c.role).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he')),
+    [contacts]
+  );
 
-  const isFiltering = Boolean(search || city || schoolName);
+  const isFiltering = Boolean(search || city || schoolName || role);
   const groups = useMemo(() => groupByFirstLetter(contacts), [contacts]);
   const letters = useMemo(() => [...groups.keys()], [groups]);
+
+  function clearAllFilters() {
+    setSearch('');
+    setCity('');
+    setSchoolName('');
+    setRole('');
+  }
 
   async function handleSync() {
     setSyncing(true);
@@ -90,6 +116,24 @@ export default function App() {
     );
   }
 
+  function renderFilterSelect(value, onChange, allLabel, options) {
+    return (
+      <span className={`chip-wrap ${value ? 'active' : ''}`}>
+        <select value={value} onChange={(e) => onChange(e.target.value)} className={value ? 'chip active' : 'chip'}>
+          <option value="">{allLabel}</option>
+          {options.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+        {value && (
+          <button className="chip-clear" onClick={() => onChange('')} aria-label={`נקה ${allLabel}`}>
+            <IconX />
+          </button>
+        )}
+      </span>
+    );
+  }
+
   return (
     <div className="app-shell">
       <div className="list-pane">
@@ -104,28 +148,33 @@ export default function App() {
           <div className="search-bar">
             <IconSearch className="search-icon" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="חיפוש"
+              placeholder="חיפוש (לחיצה על / קופצת לכאן)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button className="search-clear" onClick={() => setSearch('')} aria-label="נקה חיפוש">
+                <IconX />
+              </button>
+            )}
           </div>
 
           <div className="filter-chips">
-            <select value={city} onChange={(e) => setCity(e.target.value)} className={city ? 'chip active' : 'chip'}>
-              <option value="">כל הערים</option>
-              {cities.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <select value={schoolName} onChange={(e) => setSchoolName(e.target.value)} className={schoolName ? 'chip active' : 'chip'}>
-              <option value="">כל בתי הספר</option>
-              {schools.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            {renderFilterSelect(city, setCity, 'כל הערים', cities)}
+            {renderFilterSelect(schoolName, setSchoolName, 'כל בתי הספר', schools)}
+            {renderFilterSelect(role, setRole, 'כל התפקידים', roles)}
+            {isFiltering && (
+              <button className="clear-all-button" onClick={clearAllFilters}>
+                נקה סינון
+              </button>
+            )}
           </div>
 
+          {!loading && !error && (
+            <p className="result-count">{contacts.length} תוצאות</p>
+          )}
           {error && <p className="error">{error}</p>}
           {loading && <p className="status">טוען...</p>}
           {!loading && contacts.length === 0 && <p className="status">לא נמצאו אנשי קשר.</p>}
