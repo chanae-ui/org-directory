@@ -174,7 +174,10 @@ export default function App() {
     );
   }
 
-  const indexKeys = !isFiltering ? sections.map((s) => s.title).filter((t, i) => t && !(showFavorites && i === 0)) : [];
+  const indexKeys =
+    !isFiltering && viewMode === 'person'
+      ? sections.map((s) => s.title).filter((t, i) => t && !(showFavorites && i === 0))
+      : [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -235,6 +238,7 @@ export default function App() {
             <ActivityIndicator style={{ marginTop: 24 }} />
           ) : (
             <SectionList
+              style={styles.list}
               ref={sectionListRef}
               sections={sections}
               keyExtractor={(item) => String(item.id)}
@@ -308,6 +312,7 @@ const styles = StyleSheet.create({
   error: { color: '#b91c1c', backgroundColor: '#fef2f2', padding: 8, borderRadius: 8, marginBottom: 8 },
   status: { color: '#71758a', textAlign: 'center', marginTop: 24 },
   listArea: { flex: 1, flexDirection: 'row' },
+  list: { flex: 1 },
   sectionHeader: {
     backgroundColor: '#fff',
     color: '#71758a',
@@ -333,6 +338,6 @@ const styles = StyleSheet.create({
   star: { fontSize: 18, color: '#d1d3db' },
   starActive: { color: '#f59e0b' },
   chevron: { color: '#c6c8d2', fontSize: 18 },
-  alphaIndex: { justifyContent: 'center', paddingHorizontal: 4, gap: 1 },
+  alphaIndex: { width: 20, justifyContent: 'center', alignItems: 'center', gap: 1 },
   alphaIndexText: { color: '#4f46e5', fontSize: 11, fontWeight: '700' },
 });
