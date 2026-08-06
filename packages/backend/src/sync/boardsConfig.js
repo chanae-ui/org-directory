@@ -51,4 +51,24 @@ export const boardsConfig = [
       },
     ],
   },
+  {
+    boardId: '5099853349',
+    boardName: 'יועצות',
+    // בבורד הזה יש כמה טבלאות (קבוצות) נפרדות - מסנכרנים רק את "רשימת יועצות ויועצים בחינוך העצמאי"
+    groupId: 'group_mm5z39sp',
+    defaultRole: 'יועץ/ת חינוכי/ת',
+    columnMap: {
+      school_name: 'text_mm51ed8w', // שם בית ספר
+      institution_code: 'text_mm5n79vp', // סמל מוסד
+      city: 'text_mm512hmh', // עיר
+    },
+    contacts: [
+      {
+        idSuffix: 'main',
+        nameColumn: null, // השם של הפריט עצמו הוא שם היועץ/ת
+        phone: 'text_mm51a9av', // טלפון יועצת
+        email: 'email_mm511t41', // מייל יועצת
+      },
+    ],
+  },
 ];

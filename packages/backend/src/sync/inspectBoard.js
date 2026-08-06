@@ -20,6 +20,10 @@ async function main() {
     query ($boardId: [ID!]) {
       boards(ids: $boardId) {
         name
+        groups {
+          id
+          title
+        }
         columns {
           id
           title
@@ -28,6 +32,10 @@ async function main() {
         items_page(limit: 3) {
           items {
             name
+            group {
+              id
+              title
+            }
             column_values {
               id
               text
@@ -61,14 +69,18 @@ async function main() {
   }
 
   console.log(`\nלוח: ${board.name}\n`);
-  console.log('עמודות:');
+  console.log('קבוצות (טבלאות):');
+  for (const g of board.groups) {
+    console.log(`  ${g.id}  |  ${g.title}`);
+  }
+  console.log('\nעמודות:');
   for (const col of board.columns) {
     console.log(`  ${col.id}  |  ${col.title}  (${col.type})`);
   }
 
   console.log('\nדוגמת שורות:');
   for (const item of board.items_page.items) {
-    console.log(`  - ${item.name}`);
+    console.log(`  - [${item.group.title}] ${item.name}`);
     for (const cv of item.column_values) {
       if (cv.text) console.log(`      ${cv.id}: ${cv.text}`);
     }

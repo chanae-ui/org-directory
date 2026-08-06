@@ -7,7 +7,7 @@ dotenv.config();
 
 const MONDAY_API_URL = 'https://api.monday.com/v2';
 
-async function fetchBoardItems(boardId, apiToken) {
+async function fetchBoardItems(boardId, apiToken, groupId = null) {
   const query = `
     query ($boardId: [ID!]) {
       boards(ids: $boardId) {
@@ -15,6 +15,9 @@ async function fetchBoardItems(boardId, apiToken) {
           items {
             id
             name
+            group {
+              id
+            }
             column_values {
               id
               text
@@ -40,7 +43,10 @@ async function fetchBoardItems(boardId, apiToken) {
     throw new Error(`שגיאה מ-Monday API: ${JSON.stringify(json.errors)}`);
   }
 
-  return json.data.boards[0].items_page.items;
+  const items = json.data.boards[0].items_page.items;
+  // אם הוגדרה groupId בקונפיגורציה של הבורד - מסננים רק את הטבלה (הקבוצה) הזו,
+  // כי בורד אחד ב-Monday יכול להכיל כמה "טבלאות" נפרדות (קבוצות) שלא רוצים את כולן.
+  return groupId ? items.filter((item) => item.group.id === groupId) : items;
 }
 
 const NAME_PREFIXES = ['גב\'', 'גברת', 'מר', 'ד"ר', 'דר\'', 'הרב', 'הרבנית'];
@@ -67,22 +73,28 @@ function mapItemToContacts(item, board) {
   const institutionCode = (shared.institution_code && colById[shared.institution_code]) || null;
   const city = (shared.city && colById[shared.city]) || null;
 
-  return board.contacts.map((c) => {
-    const rawName = c.nameColumn ? colById[c.nameColumn] : item.name;
-    const { firstName, lastName } = splitName(rawName || item.name, c.nameOrder);
+  return board.contacts
+    .map((c) => {
+      const rawName = c.nameColumn ? colById[c.nameColumn] : item.name;
+      // שורה ב-Monday בלי שם ממולא (או עם שם ה"פריט" ריק) מקבלת מ-Monday את השם הגנרי
+      // "Unnamed" - זה לא איש קשר אמיתי (למשל: עדיין לא שובץ יועץ/ת לבית ספר הזה), אז מדלגים עליו.
+      if (!rawName || !rawName.trim() || rawName.trim() === 'Unnamed') return null;
 
-    return {
-      monday_item_id: `${item.id}:${c.idSuffix}`,
-      first_name: firstName,
-      last_name: lastName,
-      role: c.role || board.defaultRole || null,
-      school_name: schoolName,
-      institution_code: institutionCode,
-      city,
-      phone: (c.phone && colById[c.phone]) || null,
-      email: (c.email && colById[c.email]) || null,
-    };
-  });
+      const { firstName, lastName } = splitName(rawName, c.nameOrder);
+
+      return {
+        monday_item_id: `${item.id}:${c.idSuffix}`,
+        first_name: firstName,
+        last_name: lastName,
+        role: c.role || board.defaultRole || null,
+        school_name: schoolName,
+        institution_code: institutionCode,
+        city,
+        phone: (c.phone && colById[c.phone]) || null,
+        email: (c.email && colById[c.email]) || null,
+      };
+    })
+    .filter(Boolean);
 }
 
 async function upsertContact(contact) {
@@ -131,7 +143,7 @@ export async function runSync() {
 
   for (const board of activeBoards) {
     console.log(`בורד "${board.boardName}" (${board.boardId})...`);
-    const items = await fetchBoardItems(board.boardId, apiToken);
+    const items = await fetchBoardItems(board.boardId, apiToken, board.groupId);
     console.log(`  נמצאו ${items.length} פריטים`);
 
     for (const item of items) {
