@@ -229,6 +229,12 @@ svg {
   padding: 5px 12px;
   font-size: 0.8rem;
   transition: all 0.15s ease;
+  /* select נהג ברוחבו לפי האפשרות הארוכה ביותר בתפריט (למשל שם מוסד ארוך),
+     לא לפי הטקסט המוצג בפועל - בלי זה הצ'יפ של בתי הספר "מתפוצץ" ברוחב ושובר את השורה. */
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chip.active {
