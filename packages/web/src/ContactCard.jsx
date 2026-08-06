@@ -8,10 +8,10 @@ export default function ContactDetail({ contact, onClose }) {
   const fields = [
     { Icon: IconBriefcase, label: 'תפקיד', value: contact.role },
     { Icon: IconBuilding, label: 'בית ספר / מוסד', value: contact.school_name },
-    { Icon: IconTag, label: 'סמל מוסד', value: contact.institution_code },
+    { Icon: IconTag, label: 'סמל מוסד', value: contact.institution_code, ltr: true },
     { Icon: IconMapPin, label: 'עיר', value: contact.city },
-    { Icon: IconPhone, label: 'טלפון', value: contact.phone },
-    { Icon: IconMail, label: 'מייל', value: contact.email },
+    { Icon: IconPhone, label: 'טלפון', value: contact.phone, ltr: true },
+    { Icon: IconMail, label: 'מייל', value: contact.email, ltr: true },
   ].filter((f) => f.value);
 
   return (
@@ -52,7 +52,7 @@ export default function ContactDetail({ contact, onClose }) {
           <div className="info-row" key={f.label}>
             <f.Icon className="info-icon" />
             <span className="info-label">{f.label}</span>
-            <span className="info-value">{f.value}</span>
+            <span className="info-value" dir={f.ltr ? 'ltr' : undefined}>{f.value}</span>
           </div>
         ))}
       </div>
