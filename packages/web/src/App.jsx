@@ -10,6 +10,7 @@ import {
   saveFavorites,
 } from './utils.js';
 import { IconSearch, IconChevronLeft, IconRefresh, IconX, IconStar, IconUser, IconBuilding } from './icons.jsx';
+import FilterDropdown from './FilterDropdown.jsx';
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -158,21 +159,7 @@ export default function App() {
   }
 
   function renderFilterSelect(value, onChange, allLabel, options) {
-    return (
-      <span className={`chip-wrap ${value ? 'active' : ''}`}>
-        <select value={value} onChange={(e) => onChange(e.target.value)} className={value ? 'chip active' : 'chip'}>
-          <option value="">{allLabel}</option>
-          {options.map((o) => (
-            <option key={o} value={o}>{o}</option>
-          ))}
-        </select>
-        {value && (
-          <button className="chip-clear" onClick={() => onChange('')} aria-label={`נקה ${allLabel}`}>
-            <IconX />
-          </button>
-        )}
-      </span>
-    );
+    return <FilterDropdown label={allLabel} value={value} onChange={onChange} options={options} />;
   }
 
   return (

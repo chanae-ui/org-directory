@@ -93,6 +93,22 @@ export function IconChevronRight(props) {
   );
 }
 
+export function IconChevronDown(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5.5 9 12 15.5 18.5 9" />
+    </svg>
+  );
+}
+
+export function IconCheck(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5 12.5 9.5 17 19 6.5" />
+    </svg>
+  );
+}
+
 export function IconStar({ filled, ...props }) {
   return (
     <svg
