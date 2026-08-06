@@ -36,12 +36,24 @@ export function groupByFirstLetter(contacts) {
 const NO_SCHOOL = 'ללא שיוך מוסדי';
 
 export function groupBySchool(contacts) {
+  // מקבצים לפי סמל מוסד (מזהה יציב), לא לפי שם המוסד - כי אותו מוסד נכתב לפעמים
+  // אחרת בבורדים שונים (למשל "ב"י הצפון" מול "ב"י צפון"), וזה היה מפצל אותו לשתי קבוצות.
+  const groupKeyOf = (c) => c.institution_code || c.school_name || NO_SCHOOL;
+
+  // שם תצוגה אחיד לכל קבוצה: מעדיפים את השם משורת "המוסד" עצמה (המקור האמין), אחרת הראשון שנמצא.
+  const displayNames = new Map();
+  for (const c of contacts) {
+    const key = groupKeyOf(c);
+    const name = c.school_name || NO_SCHOOL;
+    if (c.role === 'מוסד' || !displayNames.has(key)) displayNames.set(key, name);
+  }
+
   const sorted = [...contacts].sort((a, b) =>
-    (a.school_name || NO_SCHOOL).localeCompare(b.school_name || NO_SCHOOL, 'he')
+    displayNames.get(groupKeyOf(a)).localeCompare(displayNames.get(groupKeyOf(b)), 'he')
   );
   const groups = new Map();
   for (const contact of sorted) {
-    const key = contact.school_name || NO_SCHOOL;
+    const key = displayNames.get(groupKeyOf(contact));
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(contact);
   }
