@@ -167,7 +167,10 @@ export default function App() {
       <div className="list-pane">
         <div className="app-screen" ref={scrollRef}>
           <header className="header">
-            <h1>אנשי קשר</h1>
+            <div className="brand">
+              <img src="/favicon.png" alt="" className="brand-logo" />
+              <h1>אנשי קשר</h1>
+            </div>
             <div className="header-actions">
               <div className="view-toggle">
                 <button

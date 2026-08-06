@@ -78,6 +78,18 @@ svg {
   color: var(--text);
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+
 .header-actions {
   display: flex;
   align-items: center;

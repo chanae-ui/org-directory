@@ -9,6 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Image,
   StatusBar as RNStatusBar,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -183,7 +184,10 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>אנשי קשר</Text>
+          <View style={styles.brand}>
+            <Image source={require('./assets/splash-icon.png')} style={styles.brandLogo} />
+            <Text style={styles.headerTitle}>אנשי קשר</Text>
+          </View>
           <View style={styles.headerActions}>
             <View style={styles.viewToggle}>
               <TouchableOpacity
@@ -287,6 +291,8 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#14151a' },
+  brand: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
+  brandLogo: { width: 30, height: 30 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   viewToggle: { flexDirection: 'row', backgroundColor: '#f1f2f5', borderRadius: 10, padding: 2 },
   viewToggleButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
