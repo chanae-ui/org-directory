@@ -184,10 +184,6 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.brand}>
-            <Image source={require('./assets/splash-icon.png')} style={styles.brandLogo} />
-            <Text style={styles.headerTitle}>אנשי קשר</Text>
-          </View>
           <View style={styles.headerActions}>
             <View style={styles.viewToggle}>
               <TouchableOpacity
@@ -206,6 +202,10 @@ export default function App() {
             <TouchableOpacity style={styles.syncButton} onPress={handleSync} disabled={syncing}>
               <Text style={styles.syncButtonText}>{syncing ? '⟳' : '↻'}</Text>
             </TouchableOpacity>
+          </View>
+          <View style={styles.brand}>
+            <Image source={require('./assets/splash-icon.png')} style={styles.brandLogo} />
+            <Text style={styles.headerTitle}>אנשי קשר</Text>
           </View>
         </View>
 
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#14151a' },
   brand: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
-  brandLogo: { width: 30, height: 30 },
+  brandLogo: { width: 42, height: 42 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   viewToggle: { flexDirection: 'row', backgroundColor: '#f1f2f5', borderRadius: 10, padding: 2 },
   viewToggleButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
